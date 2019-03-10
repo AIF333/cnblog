@@ -20,4 +20,5 @@ from blog import  views as blog_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', blog_views.login), # 登录页面
+    path('getValidImg/',blog_views.getValidImg)
 ]

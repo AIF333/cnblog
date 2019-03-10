@@ -1,7 +1,13 @@
 .login_h{
-            padding-top: 100px;
+    padding-top: 100px;
         }
 
 .invalid_img{
-            padding-top: 23px;
+    padding-top: 23px;
         }
+.checkstyle{
+    width: 160px;
+    height: 35px;
+    /*background-color: #2aabd2 ;*/
+    border: solid 1px;
+}
