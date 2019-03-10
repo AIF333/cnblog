@@ -1,25 +1,56 @@
-from django.shortcuts import render,HttpResponse
+from django.shortcuts import render,HttpResponse,redirect
 
 # Create your views here.
 
+#系统首页
+def index(request):
+    return render(request,"index.html")
 
-
-#登录首页
+#登录页
 def login(request):
+    import json
+
+    # 方法一 用GET方式
+    if request.is_ajax():
+        user=request.GET.get('user')
+        password=request.GET.get('password')
+        checkpwd=request.GET.get('checkpwd')
+
+        userIncheckpwd=request.session['checkChars'] #用户输入的验证码
+        # print("+++++++++++",userIncheckpwd,"++++++++++++")
+        print("+++++",user,"++++++",password,"++++++",checkpwd,"++++++")
+
+        # 检查验证码是否输入正确
+        print(userIncheckpwd.upper() == checkpwd.upper())
+        print("type of userIncheckpwd",type(userIncheckpwd),type(checkpwd))
+
+        user_info={'user':None,'errmsg':None} # 定义一个字典记录用户的登录状态，需序列化后传给js
+        if  userIncheckpwd == checkpwd:
+            if user=="aif" and password=="123":
+                pass # 用户的校验待写
+            user_info['user']=user
+            print(user_info)
+            return HttpResponse(json.dumps(user_info))
+        else:
+            user_info['errmsg']='验证码输入错误'
+            print(user_info)
+            return HttpResponse(json.dumps(user_info))
+
+
     return  render(request,'login.html')
 
 #生成验证码图片
 def getValidImg(request):
 
     #方法一 打开一个本地的图片返回给前端
-    # with open("staticAIF/pictures/AIF.png","rb") as f:
+    # with open("static/pictures/AIF.png","rb") as f:
     #     data=f.read()
 
     #方法二 用PIL模块（Pillow）导入Image生成图片
     # from PIL import  Image
     # img=Image.new(mode='RGB',size=(160,35),color='red')
-    # img.save(open('staticAIF/pictures/yzm.png','wb'),'png')
-    # with open("staticAIF/pictures/yzm.png","rb") as f:
+    # img.save(open('static/pictures/yzm.png','wb'),'png')
+    # with open("static/pictures/yzm.png","rb") as f:
     #     data=f.read()
 
     #方法三 用IO模块将图片通过内存过渡,将不会生成中间图片
@@ -49,17 +80,20 @@ def getValidImg(request):
 
     #生成验证码框，内部颜色随机
     width,height=(160,35)
+    checkCharList=[] #验证码列表
     f=BytesIO()
-    img=Image.new(mode='RGBA',size=(width,height),color=getRanColor(100))
+    img=Image.new(mode='RGBA',size=(width,height),color=getRanColor(200))
 
     #设置框内字体的格式和大小
     draw=ImageDraw.Draw(img,mode='RGBA')
-    font=ImageFont.truetype(font="staticAIF/kumo.ttf",size=38)
+    font=ImageFont.truetype(font="static/kumo.ttf",size=38)
 
     #随机写入5个字符
     # draw.text(xy=(2,2),text='AIF',fill=getRanColor(),font=font) # 参数：xy轴举例，填充文字，字体颜色
     for i in range(5):
-        draw.text(xy=(15+28*i,-2),text=getChar(),fill=getRanColor(),font=font)
+        textchar=getChar()
+        checkCharList.append(textchar)
+        draw.text(xy=(15+28*i,-2),text=textchar,fill=getRanColor(),font=font)
 
     for i in range(100):  # 加噪点
         draw.point([randint(0, width), randint(0, height)], fill=getRanColor())
@@ -75,4 +109,11 @@ def getValidImg(request):
 
     img.save(f,'png')
     data=f.getvalue()
+
+    checkChars=''.join(checkCharList)
+    # 验证码字符串 存入session，方便别的函数访问，也可用全局变量,
+    # 需注意的是session需表建立了才能用:python manage.py makemigrations   python manage.py migrate
+    request.session['checkChars']=checkChars
+
+    print('---------------',checkChars,'---------------')
     return HttpResponse(data)

@@ -5,6 +5,7 @@
     <title>blog 登录</title>
     <link rel="stylesheet" href="/static/dist/css/bootstrap.css">
     <link rel="stylesheet" href="/static/css/login.css">
+    <script src="/static/jquery-3.3.1.js"></script>
 
 </head>
 <body>
@@ -21,19 +22,51 @@
           </div>
           <div class="row">
               <div class="form-group col-md-6">
-                    <label for="reptpwd">验证码</label>
-                    <input type="password" class="form-control" id="reptpwd">
+                    <label for="checkpwd">验证码</label>
+                    <input type="text" class="form-control" id="checkpwd"><label class="error"></label>
               </div>
                <div class="col-md-6 invalid_img">
 {#                  <img src="/static/pictures/AIF.png" width="160" height="35">#}
-                  <img src="/getValidImg/" width="160" height="35">
+                  <img src="/getValidImg/" class="imgClick" width="160" height="35">
                </div>
           </div>
-
-            <button type="submit" class="btn btn-primary">登录</button>
+{#            <button type="submit" class="btn btn-primary loginBtn">登录</button>#}
+            <button type="button" class="btn btn-primary loginBtn">登录</button>
     </form>
 </div>
 
+
+<script>
+    $(".imgClick").click(function () {
+        $(this)[0].src += "?"
+        {#location.href="/login/"        这个不行，会页面全部刷新#}
+    })
+
+    $(".loginBtn").click(function () {
+        $.ajax({
+            url:"/login/",
+            type:"GET",
+            data:{
+                user:$("#user").val(),
+                password:$("#pwd").val(),
+                checkpwd:$("#checkpwd").val()
+            },
+            success:function (data) {
+                console.log(data);
+                var data1=JSON.parse(data);
+                if (data1["user"]){
+                    alert("ok");
+                    location.href="/index/";
+                }
+                else{
+                    alert("fail");
+                    $(".error").html(data1["errmsg"]).css("color","red").css("font-size","12px");
+                    setTimeout("$(\".error\").html(\"\")",3000)
+                }
+            }
+        })
+    })
+</script>
 
 </body>
 </html>
