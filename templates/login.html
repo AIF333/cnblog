@@ -32,15 +32,30 @@
           </div>
 {#            <button type="submit" class="btn btn-primary loginBtn">登录</button>#}
             <button type="button" class="btn btn-primary loginBtn">登录</button>
+            <button type="button" class="btn btn-info pull-right lregBtn">注册新用户</button>
+
     </form>
 </div>
 
 
 <script>
     $(".imgClick").click(function () {
-        $(this)[0].src += "?"
         {#location.href="/login/"        这个不行，会页面全部刷新#}
-    })
+
+        {#方法一，直接dom对象方便的写法#}
+        {#$(this)[0].src += "?" #}
+
+        {#方法二，用attr熟悉赋值#}
+        $(this).attr("src","/getValidImg/?flag="+Math.random())
+
+        {#方法三，ajax 暂时实现不了！！！#}
+        {#$.ajax({#}
+        {#    url:"/getValidImg/",#}
+        {#    success:function (data) {#}
+        {#        alert("点击图片事件");#}
+        {#        $(this).attr("src","/getValidImg/?flag="+Math.random()) ;#}
+        {#    }#}
+        {#})#}})
 
     $(".loginBtn").click(function () {
         $.ajax({
@@ -55,16 +70,21 @@
                 console.log(data);
                 var data1=JSON.parse(data);
                 if (data1["user"]){
-                    alert("ok");
+                    {#alert("ok");#}
                     location.href="/index/";
                 }
                 else{
-                    alert("fail");
+                    {#alert("fail");#}
                     $(".error").html(data1["errmsg"]).css("color","red").css("font-size","12px");
+                    $(".imgClick").attr("src","/getValidImg/?flag="+Math.random())
                     setTimeout("$(\".error\").html(\"\")",3000)
                 }
             }
         })
+    })
+
+    $(".lregBtn").click(function () {
+        location.href="/reg/"
     })
 </script>
 
