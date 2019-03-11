@@ -1,5 +1,6 @@
 from django.shortcuts import render,HttpResponse,redirect
 from django.contrib.auth.decorators import login_required #登录验证的装饰器，只有登录了才可访问某些页面
+import json
 
 # Create your views here.
 
@@ -7,13 +8,47 @@ from django.contrib.auth.decorators import login_required #登录验证的装饰
 @login_required  #需登录才可进入首页
 def index(request):
     username=request.user.username #获取当前用户的用户名
-    password=request.user.password #获取当前用户的密码  密文
     # print('------',username,password)
     return render(request,"index.html",{"username":username}) # render 传入参数需用双引号引起
 
-#登录页
+#注册页面
+def regCnblog(request):
+    from blog.forms import RegForm
+    from django.contrib.auth.models import User
+    regForm = RegForm()
+
+    if request.is_ajax():
+        regForm = RegForm(request.POST)  # 根据ajax的data实例化
+        regResponse = {"user": None, "errormsg": None}  # 注册状态字典表
+
+        if regForm.is_valid():
+            # 注册成功
+            print('---regForm.cleaned_data--', regForm.cleaned_data)
+            username = regForm.cleaned_data.get("username")
+            password = regForm.cleaned_data.get("password")
+            email = regForm.cleaned_data.get("email")
+
+            # 生成新用户，修改状态表
+            newuser = User.objects.create_user(username=username, password=password, email=email)
+
+            if newuser:
+                regResponse["user"] = username
+            else:
+                raise EOFError("创建新用户失败")
+        else:
+            # 注册失败
+            print('---regForm.cleaned_data--', regForm.cleaned_data)
+            print('---regForm.errors--', regForm.errors)
+            regResponse["errormsg"] = regForm.errors
+
+        return HttpResponse(json.dumps(regResponse))
+
+        # print("------",request.POST,request.POST.get("username"))
+    else:  # 正常访问
+        return render(request, 'reg.html', {"regForm": regForm})  # 字典也可写错 locals()，名字要一致
+
+#登录页面校验
 def loginCnblog(request):
-    import json
     from django.contrib import auth #auth 用户校验模块
 
     # 方法一 用GET方式
@@ -52,15 +87,6 @@ def loginCnblog(request):
 
 
     return  render(request,'login.html')
-
-#注销页面
-def logoutCnblog(request):
-    from django.contrib.auth import logout
-    logout(request)
-    return  redirect("/login/")
-
-
-
 
 #生成验证码图片
 def getValidImg(request):
@@ -141,3 +167,39 @@ def getValidImg(request):
     # print('---------------',checkChars,'---------------',data,'----------')
 
     return HttpResponse(data)
+
+#注销页面
+def logoutCnblog(request):
+    from django.contrib.auth import logout
+    logout(request)
+    return  redirect("/login/")
+
+# 删除登录用户
+@login_required  #需登录才可进入
+def delUser(request):
+    from django.contrib.auth.models import User
+
+    userinfo = {"username": "None", "errormsg": None} #删除状态表，需序列化后给前端ajax
+
+    if request.is_ajax():
+        username=request.POST.get("username") #前端传入的用户名
+        workusername=request.user.username #实际登录的使用名
+        print('------',request.POST)
+        print("------username--",username,'-------------',workusername)
+
+        if username == workusername:
+            user=User.objects.get(username=username)
+            deluser=user.delete()
+
+            if deluser:
+                userinfo["username"]=username
+            else:
+                userinfo["errormsg"]="删除用户%s失败" % username
+        else:
+            userinfo["errormsg"] = "非本用户无权限删除"
+
+        print(userinfo)
+        return HttpResponse(json.dumps(userinfo))
+
+
+

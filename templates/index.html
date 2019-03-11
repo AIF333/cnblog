@@ -7,6 +7,9 @@
     <script src="/static/jquery-3.3.1.js"></script>
 </head>
 <body>
+
+    {% csrf_token %}
+
     <nav class="navbar navbar-default">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
@@ -17,7 +20,10 @@
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav navbar-right">
-        <li><a href="#" >{{ username }}</a></li>
+        <li><a href="#" class="username">{{ username }}</a></li>
+
+         <li><a href="#"  class="delUser">删除用户</a></li>
+
         <li class="dropdown">
           <a href="/logout/" class="logout">logout</a>
         </li>
@@ -27,6 +33,33 @@
 </nav>
 
     <h2>cnblog登录成功，欢迎你！</h2>
+
+    <script>
+
+        var token=$("input[name=csrfmiddlewaretoken]").val();
+
+        $(".delUser").click(function () {
+            $.ajax({
+                url:"/delUser/",
+                type:"POST",
+                data:{
+                    username:$(".username").html(),
+                    csrfmiddlewaretoken:token
+                },
+                success:function (data) {
+                    var data=JSON.parse(data);
+                    if(data.username){ //data.username有值证明可以进行删除操作
+                        alert("删除用户"+data.username+"成功")
+                        location.href="/login/"
+                    }
+                    else{
+                        alert("操作失败："+data.errormsg)
+                    }
+                }
+
+            })
+        })
+    </script>
 
 </body>
 </html>

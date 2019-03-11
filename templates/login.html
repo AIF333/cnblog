@@ -32,6 +32,8 @@
           </div>
 {#            <button type="submit" class="btn btn-primary loginBtn">登录</button>#}
             <button type="button" class="btn btn-primary loginBtn">登录</button>
+            <button type="button" class="btn btn-info pull-right lregBtn">注册新用户</button>
+
     </form>
 </div>
 
@@ -53,10 +55,7 @@
         {#        alert("点击图片事件");#}
         {#        $(this).attr("src","/getValidImg/?flag="+Math.random()) ;#}
         {#    }#}
-        {#})#}
-
-
-    })
+        {#})#}})
 
     $(".loginBtn").click(function () {
         $.ajax({
@@ -82,6 +81,10 @@
                 }
             }
         })
+    })
+
+    $(".lregBtn").click(function () {
+        location.href="/reg/"
     })
 </script>
 
