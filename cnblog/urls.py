@@ -19,8 +19,9 @@ from blog import  views as blog_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('login/', blog_views.login), # 登录页面
-    path('getValidImg/',blog_views.getValidImg),
-    path('index/',blog_views.index)
+    path('login/', blog_views.loginCnblog), # 登录页面 auth模块有login函数，所以名字换成loginCnblog
+    path('getValidImg/',blog_views.getValidImg), #生成验证码
+    path('index/',blog_views.index), #首页
+    path('logout/',blog_views.logoutCnblog) #注销页面
 
 ]
