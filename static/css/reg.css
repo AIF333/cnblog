@@ -1,0 +1,27 @@
+/*头像的父级标签*/
+#avatar{
+    position: relative;
+    /*width: 60px;*/
+    height: 60px;
+}
+
+/*  avatar_input头像的input标签，需隐藏*/
+/*  avatar_img头像，表面的点击效果来源，覆盖input*/
+#avatar_input,#avatar_img{
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    left:50px;
+    top: 0;
+}
+/*将 input file 的透明度设置为0，感觉就是点击图像的效果*/
+#avatar_input{
+    opacity: 0; /*透明度 0-1*/
+}
+
+/*注册头信息样式*/
+.regHeader{
+    margin-left: 15px;
+    margin-top: 30px;
+}
+

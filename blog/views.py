@@ -21,12 +21,18 @@ def regCnblog(request):
         regForm = RegForm(request.POST)  # 根据ajax的data实例化
         regResponse = {"user": None, "errormsg": None}  # 注册状态字典表
 
+        print("----",request.POST)
+
         if regForm.is_valid():
             # 注册成功
             print('---regForm.cleaned_data--', regForm.cleaned_data)
             username = regForm.cleaned_data.get("username")
             password = regForm.cleaned_data.get("password")
             email = regForm.cleaned_data.get("email")
+            avatar=request.FILES.get("upFile")
+            with open("static/pictures/%s.jpg" % username , 'wb') as f:
+                for line in avatar:
+                    f.write(line)
 
             # 生成新用户，修改状态表
             newuser = User.objects.create_user(username=username, password=password, email=email)
@@ -48,6 +54,8 @@ def regCnblog(request):
         return render(request, 'reg.html', {"regForm": regForm})  # 字典也可写错 locals()，名字要一致
 
 #登录页面校验
+
+# 登录页面
 def loginCnblog(request):
     from django.contrib import auth #auth 用户校验模块
 
@@ -200,6 +208,22 @@ def delUser(request):
 
         print(userinfo)
         return HttpResponse(json.dumps(userinfo))
+
+# 测试用
+def test1(request):
+    print('-----',request.method)
+    if request.method=="POST":
+        print(request.POST)
+        print(request.FILES)
+
+        myfile=request.FILES.get("myfile")
+        with open("static/pictures/newf.jpg",'wb') as f:
+            for line in myfile:
+                f.write(line)
+
+        return HttpResponse("Up file OK!")
+    return render(request,"test1.html")
+
 
 
 

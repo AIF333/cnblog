@@ -118,9 +118,16 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
-
+#静态文件配置
 STATIC_URL = '/static/'
 STATICFILES_DIRS=[os.path.join(BASE_DIR,'static')]
 
+#动态文件，如用户上传的文件 该路径+upload_to 组成文件存储路径
+MEDIA_ROOT = os.path.join(BASE_DIR, 'blog','media','upload')
+MEDIA_URL = '/media/'
+
+
 # 未登录的默认跳转目录
 LOGIN_URL='/login/'
+
+
