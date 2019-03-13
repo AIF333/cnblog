@@ -50,13 +50,22 @@
 
     var token=$("input[name=csrfmiddlewaretoken]").val();
     $(".regBtn").click(function () {
+
         var formData=new FormData() ;//有上传图片二进制文件，所以需要用formdata
         formData.append("csrfmiddlewaretoken",token);
         formData.append("username",$("#username").val());
         formData.append("password",$("#password").val());
         formData.append("reptpwd",$("#reptpwd").val());
         formData.append("email",$("#email").val());
-        formData.append("upFile",$("#avatar_input")[0].files[0]); //上传图片二进制
+        formData.append("upFile",$("#avatar_input")[0].files[0]);
+
+        {#//如果用户没有上传图片，则用默认的,不知道怎么获取默认图片 ！#}
+        {#if ($("#avatar_input")[0].files.length < 1) {#}
+        {#    formData.append("upFile",$("#avatar_img")[0].src)#}
+        {#}#}
+        {#else{#}
+        {#    formData.append("upFile",$("#avatar_input")[0].files[0]);#}
+        {#}//上传图片二进制#}
 
         $.ajax({
             url:"/reg/",
@@ -82,15 +91,17 @@
 
                     var errdict=data.errormsg;   //错误信息列表 email: ["Ensure this value has at least 5 characters (it has 3)."]
                     $.each(errdict,function (errkey,errlist) {
-                        //console.log(i,j);
+
                         $("#"+errkey).next().addClass("pull-right").html(errlist[0]).css("color","red").css("font-size","12px")
+
+                        //如果两次密码输入不一致，信息在__all__ 里面
+                        if(errkey == "__all__"){
+                             $("#reptpwd").next().addClass("pull-right").html(errlist[0]).css("color","red").css("font-size","12px");
+                        }
                     })
                 }
-
             }
-
         })
-
     })
 
     //图像预览功能，用change事件。注意的是预览的图片直接前端显示，不要去走后端，因为用户可能会来回选择。等到submit时再进数据库
@@ -98,6 +109,7 @@
         var choosefile=$("#avatar_input")[0].files[0]; //这个就是选择的图片，但是不能直接赋值给 src，
             // 需要借助 Reader 模板来取出url ;
             // $("#avatar_img")[0].src=$("#avatar_input")[0].files[0] ; 不能直接执行
+        //alert(choosefile)
         var reader=new FileReader();
         reader.readAsDataURL(choosefile); // 取出url，但是不能直接使用，需要onload加载完毕
         //console.log(reader);

@@ -14,28 +14,34 @@ def index(request):
 #注册页面
 def regCnblog(request):
     from blog.forms import RegForm
-    from django.contrib.auth.models import User
+    # from django.contrib.auth.models import User # 自定义了User，需将auth的替换成自己的
+    from blog.models import User as User # 自定义了User，需将auth的替换成自己的
     regForm = RegForm()
 
     if request.is_ajax():
         regForm = RegForm(request.POST)  # 根据ajax的data实例化
         regResponse = {"user": None, "errormsg": None}  # 注册状态字典表
 
-        print("----",request.POST)
+        #print("----",request.POST)
 
         if regForm.is_valid():
             # 注册成功
             print('---regForm.cleaned_data--', regForm.cleaned_data)
+            print('---regForm.cleaned_data-username-', regForm.cleaned_data.get("username"))
             username = regForm.cleaned_data.get("username")
             password = regForm.cleaned_data.get("password")
             email = regForm.cleaned_data.get("email")
             avatar=request.FILES.get("upFile")
-            with open("static/pictures/%s.jpg" % username , 'wb') as f:
-                for line in avatar:
-                    f.write(line)
+
+            if not avatar:#如果用户没有选择图片，则用默认图片,这个放在前端，后端不好实现
+                avatar="avatarDir/AIF.jpg"
+            else:
+                with open("static/pictures/%s.jpg" % username , 'wb') as f:
+                    for line in avatar:
+                        f.write(line)
 
             # 生成新用户，修改状态表
-            newuser = User.objects.create_user(username=username, password=password, email=email)
+            newuser = User.objects.create_user(username=username, password=password, email=email,avatar=avatar)
 
             if newuser:
                 regResponse["user"] = username
@@ -211,6 +217,7 @@ def delUser(request):
 
 # 测试用
 def test1(request):
+    from blog.models import User
     print('-----',request.method)
     if request.method=="POST":
         print(request.POST)
@@ -222,6 +229,9 @@ def test1(request):
                 f.write(line)
 
         return HttpResponse("Up file OK!")
+
+    print("====",User.objects.filter(username="fandandan"))
+    #print("+++++++++++",models.User.objects.filter(username="fandandan"))
     return render(request,"test1.html")
 
 

@@ -131,3 +131,5 @@ MEDIA_URL = '/media/'
 LOGIN_URL='/login/'
 
 
+# User表继承django默认的 auth_user
+AUTH_USER_MODEL = 'blog.User'
