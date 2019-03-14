@@ -15,7 +15,7 @@ def index(request):
 def regCnblog(request):
     from blog.forms import RegForm
     # from django.contrib.auth.models import User # 自定义了User，需将auth的替换成自己的
-    from blog.models import User as User # 自定义了User，需将auth的替换成自己的
+    from blog.models import UserInfo as User # 自定义了User，需将auth的替换成自己的
     regForm = RegForm()
 
     if request.is_ajax():
@@ -193,7 +193,7 @@ def logoutCnblog(request):
 def delUser(request):
     from django.contrib.auth.models import User
 
-    userinfo = {"username": "None", "errormsg": None} #删除状态表，需序列化后给前端ajax
+    userinfo = {"username": "None", "errormsg": None}  # 删除状态表，需序列化后给前端ajax
 
     if request.is_ajax():
         username=request.POST.get("username") #前端传入的用户名
@@ -215,9 +215,42 @@ def delUser(request):
         print(userinfo)
         return HttpResponse(json.dumps(userinfo))
 
+#个人站点
+def homeSite(request,username):
+    from blog import models
+    from django.db.models import Count
+
+    # #方法一 用数据库生成的 外键字段_id 等于
+    # blog=models.Blog.objects.filter(user_id=request.user.userid)
+    # 方法二 直接用user对象 get方法返回的是一条记录，filter返回的则是一个set
+    # blog1=models.Blog.objects.get(user=request.user)
+
+    blog=request.user.blog
+
+    # 文章的分类归档
+    # 方法1 ，直接用分类的结果集,在前端渲染 归档和文章数
+    catelist = models.Category.objects.filter(blog=blog)
+
+    # # 方法二  用 count 分组函数，catelist 是分类的title和对应文章数的 QuerySet
+    # catelist=models.Category.objects.filter(blog=blog).annotate(c=Count("article__articleid")).values_list("title","c")
+    # print(catelist2)
+
+    # 标签
+    taglist=models.Tag.objects.filter(blog=blog).annotate(c=Count("article2tag__article")).values_list("title","c")
+    print(taglist,"------")
+    if request.user.is_superuser: #超级用户可以看全部的文章 文章按时间排序
+        articles=models.Article.objects.all().order_by("-create_time")
+    else:
+        # #方法一 用数据库生成的 外键字段_id 等于
+        #  articles=models.Article.objects.filter(blog_id=blog.values_list("blogid")[0]).order_by("-create_time")
+        # 方法二 用blog对象
+        articles=models.Article.objects.filter(blog=blog).order_by("-create_time")
+
+    return render(request,"homesite.html",locals())
+
 # 测试用
 def test1(request):
-    from blog.models import User
+    from blog.models import UserInfo as User
     print('-----',request.method)
     if request.method=="POST":
         print(request.POST)

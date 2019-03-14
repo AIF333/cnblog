@@ -107,7 +107,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
@@ -132,4 +133,4 @@ LOGIN_URL='/login/'
 
 
 # User表继承django默认的 auth_user
-AUTH_USER_MODEL = 'blog.User'
+AUTH_USER_MODEL = 'blog.UserInfo'

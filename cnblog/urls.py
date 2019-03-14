@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.urls import include
 from django.conf.urls import url
 from blog import  views as blog_views
 from django.views.static import  serve
@@ -34,6 +35,9 @@ urlpatterns = [
     # 这个必须用 url 模块，不能用path
     #path('media/(?P<path>.*)$',serve, {'document_root': settings.MEDIA_ROOT})
     url(r'^media/(?P<path>.*)$',  serve, {"document_root": settings.MEDIA_ROOT}),
+
+    # blog
+    url(r'^blog/',include("blog.urls")),
 
 
 

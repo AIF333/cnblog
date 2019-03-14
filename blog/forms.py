@@ -20,7 +20,7 @@ class RegForm(forms.Form):
 
     def clean_username(self):
         username=self.cleaned_data.get("username")
-        ret=models.User.objects.filter(username=username)
+        ret=models.UserInfo.objects.filter(username=username)
         # print("---form---",ret)
 
         if not ret:
