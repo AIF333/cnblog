@@ -7,15 +7,16 @@ from django.core.exceptions import  NON_FIELD_ERRORS,ValidationError
 
 
 class RegForm(forms.Form):
-    username=forms.CharField(min_length=5, # 用户名最少5位
+    msg = {"required": '该字段不能为空', "invalid": "格式错误",
+           "min_length": "长度不可以小于5位"}  # invalid只适用于邮箱
+    username=forms.CharField(error_messages=msg, min_length=5, # 用户名最少5位
         widget=widgets.TextInput(attrs={"class":"form-control","id":"username","placeholder":"请输入用户名"}))
-
-    password=forms.CharField(min_length=5,
+    password=forms.CharField(error_messages=msg, min_length=5,
         widget=widgets.PasswordInput(attrs={"class":"form-control","id":"password","placeholder":"请输入密码"}))
-    reptpwd=forms.CharField(min_length=5,
+    reptpwd=forms.CharField(error_messages=msg, min_length=5,
         widget=widgets.PasswordInput(attrs={"class": "form-control", "id": "reptpwd", "placeholder": "请输入确认密码"}))
-    email=forms.CharField(min_length=5,
-        widget=widgets.TextInput(attrs={"class": "form-control", "id": "email", "placeholder": "请输入邮箱"}))
+    email=forms.EmailField(error_messages=msg,
+        widget=widgets.EmailInput({"class": "form-control", "id": "email", "placeholder": "请输入邮箱"}))
 
     def clean_username(self):
         username=self.cleaned_data.get("username")

@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
 
+# 用户表，继续Django 自己的
 class User(AbstractUser):
     nid = models.AutoField(primary_key=True)
     nick_name = models.CharField(max_length=32, verbose_name=u'昵称', default='')
@@ -11,3 +12,7 @@ class User(AbstractUser):
     gender = models.CharField(max_length=6,choices=(('male', u'男'), ('female', u'女')), default='male', verbose_name=u'性别')
     address = models.CharField(max_length=100, verbose_name=u'地址')
     avatar = models.FileField(verbose_name=u'头像',upload_to="avatarDir/",default="avatarDir/AIF.png")
+
+# #文章表
+# class Articles():
+#     articleid=models.CharField(max_length=32,)

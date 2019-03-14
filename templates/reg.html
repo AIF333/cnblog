@@ -77,18 +77,18 @@
                 var data=JSON.parse(data);
                 console.log(data);
 
+                //先初始化错误信息
+                $("#username").next().html("")
+                $("#password").next().html("")
+                $("#reptpwd").next().html("")
+                $("#email").next().html("")
+
                 if (data.user){
                     alert("恭喜注册成功！");
                     location.href="/login/";
                 }
 
                 else{
-                    //先初始化错误信息
-                    $("#username").next().html("")
-                    $("#password").next().html("")
-                    $("#reptpwd").next().html("")
-                    $("#email").next().html("")
-
                     var errdict=data.errormsg;   //错误信息列表 email: ["Ensure this value has at least 5 characters (it has 3)."]
                     $.each(errdict,function (errkey,errlist) {
 
