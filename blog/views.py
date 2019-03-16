@@ -5,11 +5,13 @@ import json
 # Create your views here.
 
 #系统首页
-@login_required  #需登录才可进入首页
+# @login_required  #不登录也可进入首页
 def index(request):
+    from blog import models
     username=request.user.username #获取当前用户的用户名
     # print('------',username,password)
-    return render(request,"index.html",{"username":username}) # render 传入参数需用双引号引起
+    articles = models.Article.objects.all().order_by("-create_time")
+    return render(request,"index.html",{"username":username,"articles":articles}) # render 传入参数需用双引号引起
 
 #注册页面
 def regCnblog(request):
@@ -216,7 +218,9 @@ def delUser(request):
         return HttpResponse(json.dumps(userinfo))
 
 #个人站点
-def homeSite(request,username):
+
+# def homeSite(request,username,**kwargs):
+def homeSite(request,username,**kwargs):
     from blog import models
     from django.db.models import Count
 
@@ -225,7 +229,11 @@ def homeSite(request,username):
     # 方法二 直接用user对象 get方法返回的是一条记录，filter返回的则是一个set
     # blog1=models.Blog.objects.get(user=request.user)
 
-    blog=request.user.blog
+    conditon=kwargs.get("condition")
+    para=kwargs.get("para")
+    print(username,conditon,para,kwargs,"----------")
+    user=models.UserInfo.objects.get(username=username)
+    blog=user.blog
 
     # 文章的分类归档
     # 方法1 ，直接用分类的结果集,在前端渲染 归档和文章数
@@ -235,18 +243,92 @@ def homeSite(request,username):
     # catelist=models.Category.objects.filter(blog=blog).annotate(c=Count("article__articleid")).values_list("title","c")
     # print(catelist2)
 
-    # 标签
-    taglist=models.Tag.objects.filter(blog=blog).annotate(c=Count("article2tag__article")).values_list("title","c")
+    # 标签归档
+    print( "-----------")
+    taglist=models.Tag.objects.filter(blog=blog).filter(article__blog=blog).values("title").annotate(c=Count("article2tag__article")).values_list("title","c")
     print(taglist,"------")
-    if request.user.is_superuser: #超级用户可以看全部的文章 文章按时间排序
-        articles=models.Article.objects.all().order_by("-create_time")
-    else:
-        # #方法一 用数据库生成的 外键字段_id 等于
-        #  articles=models.Article.objects.filter(blog_id=blog.values_list("blogid")[0]).order_by("-create_time")
-        # 方法二 用blog对象
-        articles=models.Article.objects.filter(blog=blog).order_by("-create_time")
 
+    # 发布时间归档
+    crelist=models.Article.objects.filter(blog=blog).extra(select={"formateDate":"strftime('%%Y-%%m',create_time)"})\
+         .values_list("formateDate").annotate(C=Count("title")).values_list("formateDate","C")
+
+    if not kwargs: # 如果没有输入左侧的选择，则显示用户的所有文章
+        articles = models.Article.objects.filter(blog=blog).order_by("-create_time")
+    elif conditon == "category": #  选择 文章分类
+        # print(conditon, para, "---11111---")
+
+        # 两种写法都可以，方法一分两步
+        # catrgory=models.Category.objects.filter(title=para)
+        # articles=models.Article.objects.filter(blog=blog).filter(category__in=catrgory)
+
+        # 方法二直接一个查询
+        articles=models.Article.objects.filter(blog=blog).filter(category__title=para)
+
+    elif conditon == "tag": # 选择  标签分类
+        # print(conditon, para, "---22222---")
+        # tag=models.Tag.objects.filter(title=para)
+        # articles =models.Article.objects.filter(blog=blog).filter(tags__in=tag)
+        articles=models.Article.objects.filter(blog=blog).filter(tags__title=para)
+
+    elif conditon == "cret" : # 选择 月份分类
+        # print(conditon, para, "---33333---")
+        articles=models.Article.objects.filter(blog=blog).extra(select={"formateDate": "strftime('%%Y-%%m',create_time)"})\
+            .extra(where=["formateDate = '%s'"%para ])
+
+    # 文章
+    # if user.is_superuser: #超级用户可以看全部的文章 文章按时间排序
+    #     # 这里注释，后期需要可以放开
+    #     # articles=models.Article.objects.all().order_by("-create_time")
+    #     articles = models.Article.objects.filter(blog=blog).order_by("-create_time")
+    # else:
+    #     # #方法一 用数据库生成的 外键字段_id 等于
+    #     #  articles=models.Article.objects.filter(blog_id=blog.values_list("blogid")[0]).order_by("-create_time")
+    #     # 方法二 用blog对象
+    #     articles=models.Article.objects.filter(blog=blog).order_by("-create_time")
+    # print("55555555555555555")
     return render(request,"homesite.html",locals())
+
+# 文章渲染
+def article(request,username,articleid):
+    from blog import models
+
+    blog=models.Blog.objects.filter(user__username=username)[0]
+    print("---",blog)
+    article=models.Article.objects.filter(blog=blog,articleid=articleid)[0]
+
+    return render(request,"article.html",{"article":article})
+
+# 点赞功能
+def diggit(request):
+    from django.db import transaction
+    from django.db.models import F
+    from blog import models
+
+    print("diggit---------------11111")
+    if request.is_ajax():
+        article_id=request.POST.get("article_id")
+
+        print(request.user.username,article_id,"-----")
+        user=request.user
+        article=models.Article.objects.filter(articleid=article_id)
+        art_state={"state":False}
+        # 在点赞表中加一个 用户和文章的记录，同时文章表的点赞数+1，这两个是事物
+        try:
+            with transaction.atomic():
+                # 方法一
+                models.ArticleUpDown.objects.create(user_id=user.userid,article_id=article_id)
+                # 方法二
+                # models.ArticleUpDown.objects.create(user=user,article=article[0])
+                article.update(up_count=F("up_count")+1)
+                art_state={"state":True}
+        except:
+            pass
+
+    # django 下的json，在前端不需要反序列化
+    from django.http import JsonResponse
+    return JsonResponse(art_state)
+
+
 
 # 测试用
 def test1(request):

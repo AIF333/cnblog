@@ -134,3 +134,22 @@ LOGIN_URL='/login/'
 
 # User表继承django默认的 auth_user
 AUTH_USER_MODEL = 'blog.UserInfo'
+
+# 可以打印django的查询sql
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console':{
+            'level':'ERROR',     #  日志级别可以自己定义
+            'class':'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.db.backends': {
+            'handlers': ['console'],
+            'propagate': True,
+            'level':'ERROR',
+        },
+    }
+}

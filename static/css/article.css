@@ -1,0 +1,31 @@
+/*文章详细页的css*/
+/*标题样式*/
+.title_con{
+    color: cornflowerblue;
+}
+
+/*内容样式*/
+.content_con{
+    color: black;
+    font: 0.875em/1.5em "微软雅黑" , "PTSans" , "Arial" ,sans-serif;
+    font-size: 18px;
+}
+
+/*点赞图标*/
+.diggit{
+    float: left;
+    width: 46px;
+    height: 52px;
+    background: url(/static/pictures/upup.gif) no-repeat;
+    text-align: center;
+    cursor: pointer;
+    margin-top: 2px;
+    padding-top: 5px;
+}
+
+/*重复点赞的显示*/
+.upmsg{
+        margin-top: 32px;
+        margin-right: 10px;
+        color: #d9534f;
+}

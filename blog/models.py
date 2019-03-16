@@ -39,7 +39,7 @@ class Category(models.Model):
     blog=models.ForeignKey(verbose_name="博客",to="Blog",to_field="blogid"  ,on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.title
+        return self.title+"-->"+str(self.blog)
 # 文章
 class Article(models.Model):
     articleid = models.BigAutoField(primary_key=True)
@@ -101,7 +101,12 @@ class ArticleUpDown(models.Model):
     articleupdownid = models.AutoField(primary_key=True)
     user = models.ForeignKey(null=True,verbose_name='点赞者', to='UserInfo', to_field='userid',on_delete=models.CASCADE)
     article = models.ForeignKey(verbose_name='文章',null=True,to="Article",to_field="articleid",on_delete=models.CASCADE)
-    models.BooleanField(verbose_name='是否赞')
+    isup = models.BooleanField(verbose_name='是否赞',default=False)
+
+    # 设置联合约束
+    class Meta:
+        unique_together=("user","article")
+
 # 评论点赞
 class CommentUp(models.Model):
     """
@@ -111,13 +116,14 @@ class CommentUp(models.Model):
     user = models.ForeignKey(verbose_name='评论者',null=True,to="UserInfo",to_field="userid",on_delete=models.CASCADE)
     comment = models.ForeignKey(verbose_name='评论内容',null=True,to="Comment",to_field="commentid",on_delete=models.CASCADE)
 
+
 class Tag(models.Model):
     tagid = models.AutoField(primary_key=True)
     title = models.CharField(verbose_name='标签名称', max_length=32)
     blog = models.ForeignKey(verbose_name='所属博客', to='Blog', to_field='blogid',on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.title
+        return self.title+"-->"+str(self.blog)
 
 class Article2Tag(models.Model):
     nid = models.AutoField(primary_key=True)

@@ -1,0 +1,79 @@
+{#{% extends 'manger.html' %}#}
+<link rel="stylesheet" href="/static/css/article.css">
+
+<style>
+
+</style>
+
+{% extends 'homesite.html' %}
+
+{% block art %}
+    {% csrf_token %}
+    <!-- 文章标题 -->
+    <div class="art_title">
+        <h2 class="title_con text-center">{{ article.title }}</h2>
+    </div>
+
+    <br>
+
+    <!-- 文章内容 -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="content_con col-md-10">
+                {{ article.articledetail.content|safe }}
+            </div>
+            <div class="col-md-1"></div>
+        </div>
+    </div>
+
+    <!--点赞功能-->
+    <div class="row">
+        <div class="col-md-11">
+
+            <div class="diggit pull-right">
+                <span class="diggnum" id="digg_count">{{ article.up_count }}</span>
+            </div>
+            <span class="upmsg pull-right"></span>
+        </div>
+
+        <!--此处新加一个取过渡值的标签，因为引用了其他文件，如果直接在ajax下用大括号来获取
+        变量值，页面是提前渲染好的，有可能页面读不到值-->
+        <div class="varinfo">
+            <span article_id="{{ article.articleid }}"></span>
+        </div>
+    </div>
+
+    <br><hr>
+
+    <script>
+        $(".diggit").click(function () {
+
+            $.ajax({
+                url:"/blog/diggit/",
+                type:"POST",
+                data:{
+                    csrfmiddlewaretoken:$("[name=csrfmiddlewaretoken]").val(),
+                    article_id:$(".varinfo").children("span").attr("article_id")
+                },
+                success:function (data) {
+                    console.log(data);
+                    if (!data["state"]){
+                        console.log("111111");
+                        $(".upmsg").html("已经赞过了");
+                        setTimeout('$(".upmsg").html("")',2000);
+                    }
+                    else{
+                        console.log("22222"+$("#digg_count").text())
+                        var dign=parseInt($("#digg_count").text())+1;
+                        $("#digg_count").text(dign)
+
+                    }
+                }
+            })
+
+        })
+
+    </script>
+
+{% endblock %}
