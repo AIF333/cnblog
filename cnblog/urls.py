@@ -22,10 +22,15 @@ from django.views.static import  serve
 from cnblog import settings
 
 urlpatterns = [
+    path('',blog_views.index), #首页
+    # url(r'^$', blog_views.index),  # 首页
+
     path('admin/', admin.site.urls),
     path('login/', blog_views.loginCnblog), # 登录页面 auth模块有login函数，所以名字换成loginCnblog
     path('getValidImg/',blog_views.getValidImg), #生成验证码
     path('index/',blog_views.index), #首页
+
+
     path('logout/',blog_views.logoutCnblog), #注销页面
     path('reg/',blog_views.regCnblog), #注册页面 生成新用户
     path('delUser/',blog_views.delUser), #注册页面 生成新用户
@@ -37,7 +42,8 @@ urlpatterns = [
     url(r'^media/(?P<path>.*)$',  serve, {"document_root": settings.MEDIA_ROOT}),
 
     # blog
-    url(r'^blog/',include("blog.urls")),
+    # url(r'^blog/',include("blog.urls")),
+    path('blog/',include("blog.urls")),
 
 
 

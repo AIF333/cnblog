@@ -21,8 +21,7 @@ $("#btn_comment_submit").click(function () {
 
             console.log(create_time)
 
-            var s='<div class="feedbackItem"><div class="commenttitile"><a>#'+forloop.counter+'楼 &nbsp;</a>'
-                +create_time+' &nbsp;<a href="/blog/'+username+'"' +
+            var s='<div class="feedbackItem"><div class="commenttitile">'+create_time+' &nbsp;<a href="/blog/'+username+'"' +
                 '>'+nick_name+'</a><a class="pull-right" id="reply">回复</a> </div><div class="oneCommentBody">' +
                 '<div>'+content+'</div></div></div>'
 
