@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>blog 登录</title>
+    <title>blog 注册页面</title>
     <link rel="stylesheet" href="/static/dist/css/bootstrap.css">
-    <link rel="stylesheet" href="/static/css/login.css">
+    <link rel="stylesheet" href="/static/css/reg.css">
     <script src="/static/jquery-3.3.1.js"></script>
 
 </head>
@@ -12,7 +12,10 @@
 
 {% csrf_token %}
 
-<div class="login_h container">
+<p><h5 class="regHeader">cnblog注册</h5></p>
+
+
+<div clas="regBox">
     <form class="col-md-4 col-md-offset-2 ">
 
           <div class="form-group">
@@ -34,6 +37,11 @@
             {{ regForm.email }}<span></span>
           </div>
 
+          <div class="form-group" id="avatar">
+              <label for="avatar_input">头像</label>
+              <p><img src="/static/pictures/bak/AIF.png" id="avatar_img"></p>
+               <p><input type="file" id="avatar_input" name="upFile"></p>
+          </div>
            <button type="button" class="btn btn-primary regBtn">提交</button>
     </form>
 </div>
@@ -42,19 +50,38 @@
 
     var token=$("input[name=csrfmiddlewaretoken]").val();
     $(".regBtn").click(function () {
+
+        var formData=new FormData() ;//有上传图片二进制文件，所以需要用formdata
+        formData.append("csrfmiddlewaretoken",token);
+        formData.append("username",$("#username").val());
+        formData.append("password",$("#password").val());
+        formData.append("reptpwd",$("#reptpwd").val());
+        formData.append("email",$("#email").val());
+        formData.append("upFile",$("#avatar_input")[0].files[0]);
+
+        {#//如果用户没有上传图片，则用默认的,不知道怎么获取默认图片 ！#}
+        {#if ($("#avatar_input")[0].files.length < 1) {#}
+        {#    formData.append("upFile",$("#avatar_img")[0].src)#}
+        {#}#}
+        {#else{#}
+        {#    formData.append("upFile",$("#avatar_input")[0].files[0]);#}
+        {#}//上传图片二进制#}
+
         $.ajax({
             url:"/reg/",
             type:"POST",
-            data:{
-                csrfmiddlewaretoken:token,
-                username:$("#username").val(),
-                password:$("#password").val(),
-                reptpwd:$("#reptpwd").val(),
-                email:$("#email").val()
-            },
+            data:formData,
+            processData: false,
+            contentType : false, // /这两个不加会报类型错误 Uncaught TypeError:
             success:function (data) {
                 var data=JSON.parse(data);
                 console.log(data);
+
+                //先初始化错误信息
+                $("#username").next().html("")
+                $("#password").next().html("")
+                $("#reptpwd").next().html("")
+                $("#email").next().html("")
 
                 if (data.user){
                     alert("恭喜注册成功！");
@@ -62,24 +89,39 @@
                 }
 
                 else{
-                    //先初始化错误信息
-                    $("#username").next().html("")
-                    $("#password").next().html("")
-                    $("#reptpwd").next().html("")
-                    $("#email").next().html("")
-
                     var errdict=data.errormsg;   //错误信息列表 email: ["Ensure this value has at least 5 characters (it has 3)."]
                     $.each(errdict,function (errkey,errlist) {
-                        //console.log(i,j);
+
                         $("#"+errkey).next().addClass("pull-right").html(errlist[0]).css("color","red").css("font-size","12px")
+
+                        //如果两次密码输入不一致，信息在__all__ 里面
+                        if(errkey == "__all__"){
+                             $("#reptpwd").next().addClass("pull-right").html(errlist[0]).css("color","red").css("font-size","12px");
+                        }
                     })
                 }
-
             }
-
         })
-
     })
+
+    //图像预览功能，用change事件。注意的是预览的图片直接前端显示，不要去走后端，因为用户可能会来回选择。等到submit时再进数据库
+    $("#avatar_input").change(function () {
+        var choosefile=$("#avatar_input")[0].files[0]; //这个就是选择的图片，但是不能直接赋值给 src，
+            // 需要借助 Reader 模板来取出url ;
+            // $("#avatar_img")[0].src=$("#avatar_input")[0].files[0] ; 不能直接执行
+        //alert(choosefile)
+        var reader=new FileReader();
+        reader.readAsDataURL(choosefile); // 取出url，但是不能直接使用，需要onload加载完毕
+        //console.log(reader);
+        reader.onload=function () {
+            //方法一 直接赋值
+            //$("#avatar_img")[0].src = this.result;
+            //方法二 用 attr方法
+            $("#avatar_img").attr("src",this.result) ;
+
+        }
+    })
+
 
 </script>
 

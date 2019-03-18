@@ -5,31 +5,50 @@ import json
 # Create your views here.
 
 #系统首页
-@login_required  #需登录才可进入首页
+# @login_required  #不登录也可进入首页
 def index(request):
+    from blog import models
     username=request.user.username #获取当前用户的用户名
     # print('------',username,password)
-    return render(request,"index.html",{"username":username}) # render 传入参数需用双引号引起
+    articles = models.Article.objects.all().order_by("-create_time")
+
+    # 如果登录的用户
+    if username:
+        return render(request,"index.html",{"username":username,"articles":articles}) # render 传入参数需用双引号引起
+    else:
+        return render(request,'nologindex.html')
 
 #注册页面
 def regCnblog(request):
     from blog.forms import RegForm
-    from django.contrib.auth.models import User
+    # from django.contrib.auth.models import User # 自定义了User，需将auth的替换成自己的
+    from blog.models import UserInfo as User # 自定义了User，需将auth的替换成自己的
     regForm = RegForm()
 
     if request.is_ajax():
         regForm = RegForm(request.POST)  # 根据ajax的data实例化
         regResponse = {"user": None, "errormsg": None}  # 注册状态字典表
 
+        #print("----",request.POST)
+
         if regForm.is_valid():
             # 注册成功
             print('---regForm.cleaned_data--', regForm.cleaned_data)
+            print('---regForm.cleaned_data-username-', regForm.cleaned_data.get("username"))
             username = regForm.cleaned_data.get("username")
             password = regForm.cleaned_data.get("password")
             email = regForm.cleaned_data.get("email")
+            avatar=request.FILES.get("upFile")
+
+            if not avatar:#如果用户没有选择图片，则用默认图片,这个放在前端，后端不好实现
+                avatar="avatarDir/AIF.jpg"
+            else:
+                with open("static/pictures/%s.jpg" % username , 'wb') as f:
+                    for line in avatar:
+                        f.write(line)
 
             # 生成新用户，修改状态表
-            newuser = User.objects.create_user(username=username, password=password, email=email)
+            newuser = User.objects.create_user(username=username, password=password, email=email,avatar=avatar)
 
             if newuser:
                 regResponse["user"] = username
@@ -48,6 +67,8 @@ def regCnblog(request):
         return render(request, 'reg.html', {"regForm": regForm})  # 字典也可写错 locals()，名字要一致
 
 #登录页面校验
+
+# 登录页面
 def loginCnblog(request):
     from django.contrib import auth #auth 用户校验模块
 
@@ -179,7 +200,7 @@ def logoutCnblog(request):
 def delUser(request):
     from django.contrib.auth.models import User
 
-    userinfo = {"username": "None", "errormsg": None} #删除状态表，需序列化后给前端ajax
+    userinfo = {"username": "None", "errormsg": None}  # 删除状态表，需序列化后给前端ajax
 
     if request.is_ajax():
         username=request.POST.get("username") #前端传入的用户名
@@ -200,6 +221,176 @@ def delUser(request):
 
         print(userinfo)
         return HttpResponse(json.dumps(userinfo))
+
+#个人站点
+
+# def homeSite(request,username,**kwargs):
+def homeSite(request,username,**kwargs):
+    from blog import models
+    from django.db.models import Count
+
+    # #方法一 用数据库生成的 外键字段_id 等于
+    # blog=models.Blog.objects.filter(user_id=request.user.userid)
+    # 方法二 直接用user对象 get方法返回的是一条记录，filter返回的则是一个set
+    # blog1=models.Blog.objects.get(user=request.user)
+
+    conditon=kwargs.get("condition")
+    para=kwargs.get("para")
+    # print(username,conditon,para,kwargs,"----------")
+    user=models.UserInfo.objects.get(username=username)
+    blog=user.blog
+
+    # 文章的分类归档
+    # 方法1 ，直接用分类的结果集,在前端渲染 归档和文章数
+    catelist = models.Category.objects.filter(blog=blog)
+
+    # # 方法二  用 count 分组函数，catelist 是分类的title和对应文章数的 QuerySet
+    # catelist=models.Category.objects.filter(blog=blog).annotate(c=Count("article__articleid")).values_list("title","c")
+    # print(catelist2)
+
+    # 标签归档
+    # print( "-----------")
+    taglist=models.Tag.objects.filter(blog=blog).filter(article__blog=blog).values("title").annotate(c=Count("article2tag__article")).values_list("title","c")
+    # print(taglist,"------")
+
+    # 发布时间归档
+    crelist=models.Article.objects.filter(blog=blog).extra(select={"formateDate":"strftime('%%Y-%%m',create_time)"})\
+         .values_list("formateDate").annotate(C=Count("title")).values_list("formateDate","C")
+
+    if not kwargs: # 如果没有输入左侧的选择，则显示用户的所有文章
+        articles = models.Article.objects.filter(blog=blog).order_by("-create_time")
+    elif conditon == "category": #  选择 文章分类
+        # print(conditon, para, "---11111---")
+
+        # 两种写法都可以，方法一分两步
+        # catrgory=models.Category.objects.filter(title=para)
+        # articles=models.Article.objects.filter(blog=blog).filter(category__in=catrgory)
+
+        # 方法二直接一个查询
+        articles=models.Article.objects.filter(blog=blog).filter(category__title=para)
+
+    elif conditon == "tag": # 选择  标签分类
+        # print(conditon, para, "---22222---")
+        # tag=models.Tag.objects.filter(title=para)
+        # articles =models.Article.objects.filter(blog=blog).filter(tags__in=tag)
+        articles=models.Article.objects.filter(blog=blog).filter(tags__title=para)
+
+    elif conditon == "cret" : # 选择 月份分类
+        # print(conditon, para, "---33333---")
+        articles=models.Article.objects.filter(blog=blog).extra(select={"formateDate": "strftime('%%Y-%%m',create_time)"})\
+            .extra(where=["formateDate = '%s'"%para ])
+
+    # 文章
+    # if user.is_superuser: #超级用户可以看全部的文章 文章按时间排序
+    #     # 这里注释，后期需要可以放开
+    #     # articles=models.Article.objects.all().order_by("-create_time")
+    #     articles = models.Article.objects.filter(blog=blog).order_by("-create_time")
+    # else:
+    #     # #方法一 用数据库生成的 外键字段_id 等于
+    #     #  articles=models.Article.objects.filter(blog_id=blog.values_list("blogid")[0]).order_by("-create_time")
+    #     # 方法二 用blog对象
+    #     articles=models.Article.objects.filter(blog=blog).order_by("-create_time")
+    # print("55555555555555555")
+    return render(request,"homesite.html",locals())
+
+# 文章渲染
+def article(request,username,articleid):
+    from blog import models
+
+    blog=models.Blog.objects.filter(user__username=username)[0]
+    print("---",blog)
+    article=models.Article.objects.filter(blog=blog,articleid=articleid)[0]
+
+    commentList=models.Comment.objects.filter(article=article)
+
+    return render(request,"article.html",{"article":article,"commentList":commentList})
+
+# 点赞功能
+def diggit(request):
+    from django.db import transaction
+    from django.db.models import F
+    from blog import models
+
+    # print("diggit---------------11111")
+    if request.is_ajax():
+        article_id=request.POST.get("article_id")
+
+        print(request.user.username,article_id,"-----")
+        user=request.user
+        article=models.Article.objects.filter(articleid=article_id)
+        art_state={"state":False}
+        # 在点赞表中加一个 用户和文章的记录，同时文章表的点赞数+1，这两个是事物
+        try:
+            with transaction.atomic():
+                # 方法一
+                models.ArticleUpDown.objects.create(user_id=user.userid,article_id=article_id)
+                # 方法二
+                # models.ArticleUpDown.objects.create(user=user,article=article[0])
+                article.update(up_count=F("up_count")+1)
+                art_state={"state":True}
+        except:
+            pass
+
+    # django 下的json，在前端不需要反序列化
+    from django.http import JsonResponse
+    return JsonResponse(art_state)
+
+
+# 评论功能
+def comment(request):
+    import datetime
+    from blog import models
+    from django.db import transaction
+    from django.db.models import F
+
+    if request.is_ajax():
+        content=request.POST.get("comment")
+        comentuser=request.user.userid
+        article_id=request.POST.get("article_id")
+        create_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # print(comment,comentuser,article_id,"+++++++")
+
+        # 做到父级评论可以到数据库了
+
+        # 定一个中专的字典
+        commentInfo = {"create_time":None}
+        commentInfo["create_time"]=create_time
+
+        with transaction.atomic():
+            models.Comment.objects.create(content=content,create_time=create_time,article_id=article_id,user_id=comentuser)
+            models.Article.objects.filter(articleid=article_id).update(comment_count=F("comment_count")+1)
+
+        from django.http import JsonResponse
+        import json
+
+        # commentInfo=json.dumps(commentInfo)
+
+    print(commentInfo,type(commentInfo),"000000")
+    return JsonResponse(commentInfo)
+    # return HttpResponse(commentInfo)
+
+def reply(request):
+    pass
+
+# 测试用
+def test1(request):
+    from blog.models import UserInfo as User
+    print('-----',request.method)
+    if request.method=="POST":
+        print(request.POST)
+        print(request.FILES)
+
+        myfile=request.FILES.get("myfile")
+        with open("static/pictures/newf.jpg",'wb') as f:
+            for line in myfile:
+                f.write(line)
+
+        return HttpResponse("Up file OK!")
+
+    print("====",User.objects.filter(username="fandandan"))
+    #print("+++++++++++",models.User.objects.filter(username="fandandan"))
+    return render(request,"test1.html")
+
 
 
 

@@ -3,43 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link rel="stylesheet" href="../staticAIF/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="/static/dist/css/bootstrap.css">
+    <script src="/static/jquery-3.3.1.js"></script>
 </head>
 <body>
-    <div>aaaaaaaaaaaa</div>
-    <div>bbbbbbbbbbbbbb</div>
-    <table class="table table-striped">
-        <tr>
-            <th>NAME</th>
-            <th>AGE</th>
-            <th>JUMP-HEIGHT</th>
-        </tr>
-        <tr>
-            <td>Allen Iverson</td>
-            <td>26</td>
-            <td>111</td>
-        </tr>
-        <tr>
-            <td>YaoMing</td>
-            <td>26</td>
-            <td>70</td>
-        </tr>
-        <tr>
-            <td>Lbron Jams</td>
-            <td>26</td>
-            <td>106</td>
-        </tr>
 
-    </table>
+<form action="/test/" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <p><input type="text" name="user" class="myuser"></p>
+    <p><input type="file" name="myfile" class="myUpfile" ></p>
 
+    <p><input type="submit" value="提交" class="btn btn-primary"></p>
+    <p><button type="button" class="btnFilesub">ajax提交</button></p>
+</form>
 
-<ul class="errorlist">
-    <li>username
-        <ul class="errorlist">
-            <li>Ensure this value has at least 5 characters (it has 3).</li>
-        </ul>
-    </li>
-    <li>password
-        <ul class="errorlist"><li>Ensure this value has at least 5 characters (it has 3).</li></ul></li><li>reptpwd<ul class="errorlist"><li>Ensure this value has at least 5 characters (it has 3).</li></ul></li><li>email<ul class="errorlist"><li>Ensure this value has at least 5 characters (it has 2).</li></ul></li></ul>
+<script>
+    $(".btnFilesub").click(function () {
+        var token=$("input[name=csrfmiddlewaretoken]").val();
+        var formdata=new FormData(); //表单数据可以直接写字典传送，非表单数据需借助FormData来传送
+
+        console.log("--"+token+"--"+formdata);
+        formdata.append("csrfmiddlewaretoken",token);
+        formdata.append("user",$(".myuser").val());
+        formdata.append("myfile",$(".myUpfile")[0].files[0]);
+        console.log("-------"+token+"-----"+formdata);
+
+        $.ajax({
+            url:"/test/",
+            type:"POST",
+            data:formdata,
+            processData: false,
+            contentType : false,
+            //声明当前的data数据是否进行转码或预处理，默认为true，即预处理；if为false，
+            // 那么对data：{a:1,b:2}会调用json对象的toString()方法，即{a:1,b:2}.toString()
+            // ,最后得到一个［object，Object］形式的结果。
+            //contentType：默认值: "application/x-www-form-urlencoded"。发送信息至服务器时内容编码类型。
+            // 用来指明当前请求的数据编码格式；urlencoded:?a=1&b=2；如果想以其他方式提交数据，
+             //比如contentType:"application/json"，即向服务器发送一个json字符串：
+
+            success:function (data) {
+                console.log(data);
+            }
+        })
+    })
+</script>
 </body>
 </html>

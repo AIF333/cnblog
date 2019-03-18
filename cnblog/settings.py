@@ -107,7 +107,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
@@ -118,9 +119,37 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
-
+#静态文件配置
 STATIC_URL = '/static/'
 STATICFILES_DIRS=[os.path.join(BASE_DIR,'static')]
 
+#动态文件，如用户上传的文件 该路径+upload_to 组成文件存储路径
+MEDIA_ROOT = os.path.join(BASE_DIR, 'blog','media','upload')
+MEDIA_URL = '/media/'
+
+
 # 未登录的默认跳转目录
 LOGIN_URL='/login/'
+
+
+# User表继承django默认的 auth_user
+AUTH_USER_MODEL = 'blog.UserInfo'
+
+# 可以打印django的查询sql
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console':{
+            'level':'ERROR',     #  日志级别可以自己定义
+            'class':'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.db.backends': {
+            'handlers': ['console'],
+            'propagate': True,
+            'level':'ERROR',
+        },
+    }
+}

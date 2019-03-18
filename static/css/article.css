@@ -1,0 +1,78 @@
+/*文章详细页的css*/
+/*标题样式*/
+.title_con{
+    color: cornflowerblue;
+}
+
+/*内容样式*/
+.content_con{
+    color: black;
+    font: 0.875em/1.5em "微软雅黑" , "PTSans" , "Arial" ,sans-serif;
+    font-size: 18px;
+}
+
+/*点赞图标*/
+.diggit{
+    float: left;
+    width: 46px;
+    height: 52px;
+    background: url(/static/pictures/upup.gif) no-repeat;
+    text-align: center;
+    cursor: pointer;
+    margin-top: 2px;
+    padding-top: 5px;
+}
+
+/*重复点赞的显示*/
+.upmsg{
+        margin-top: 32px;
+        margin-right: 10px;
+        color: #d9534f;
+}
+
+
+/*评论区*/
+/*评论头样式*/
+#commentform_title {
+    background-image: url(/static/pictures/icon_addcomment.gif);
+    background-repeat: no-repeat;
+    padding: 0 0 0 25px;
+    margin-bottom: 10px;
+}
+
+.commentbox_title_left {
+    float: left;
+}
+
+.comment_textarea{
+    line-height: 1.6;
+    width: 450px;
+    height: 100px;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    font-family: 'PingFang SC','Helvetica Neue','Helvetica','Arial',sans-serif;
+}
+
+.clear{
+    clear: both;
+}
+
+/*评论提交按钮*/
+.comment_btn{
+    height: 26px;
+    width: 68px;
+    margin-top: 10px;
+    padding: 0;
+    line-height: 22px;
+}
+
+/*展示评论的框子*/
+.feedbackItem {
+    padding: 8px;
+    border-bottom: 1px dotted #ccc;
+}
+
+.commenttitile{
+}
+.oneCommentBody{
+}

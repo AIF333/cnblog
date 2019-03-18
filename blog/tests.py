@@ -13,15 +13,15 @@ from django.test import TestCase
 # print(chr(90))
 # print(chr(97))
 # print(chr(122))
-l=[]
-for i in range(48,58):
-    l.append(chr(i))
+# l=[]
+# for i in range(48,58):
+#     l.append(chr(i))
 
 # for i in range(65,91):
 #     l.append(chr(i))
 # for i in range(97,122):
 #     l.append(chr(i))
-print(l)
+# print(l)
 
 # ll=list(range(65,91))+list(range(97,122))
 # print(ll)
@@ -30,13 +30,24 @@ print(l)
 # for i in range(5):
 #     print(i)
 
-from random import choice
-def getChar():
-    listChar = []
-    for i in range(6):
-        chrList = list(range(65, 91)) + list(range(97, 122)) + list(range(48, 58))
-        listChar.append(chr(choice(chrList)))
+# from random import choice
+# def getChar():
+#     listChar = []
+#     for i in range(6):
+#         chrList = list(range(65, 91)) + list(range(97, 122)) + list(range(48, 58))
+#         listChar.append(chr(choice(chrList)))
+#
+#     print(''.join(listChar))
+#
+# getChar()
 
-    print(''.join(listChar))
+# 检查字符串
+# strs=["123456","abcde","123bcd"]
+#
+# for str in strs:
+#     if str.isdigit():
+#         print(str)
 
-getChar()
+
+import datetime
+print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") )

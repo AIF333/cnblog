@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/dist/css/bootstrap.css">
+    <script src="/static/jquery-3.3.1.js"></script>
+    <link rel="stylesheet" href="/static/dist/js/bootstrap.js">
+    <link rel="stylesheet" href="/static/css/homesite.css">
+
+</head>
+<body>
+
+<!--头部-->
+<div class="container header">
+    <div class="row" style="padding-top: 15px">
+        <div class="col-md-2">
+            <span class="text">{{ user.nick_name }} 的个人博客</span>
+        </div>
+    </div>
+</div>
+
+
+<div class="container boder">
+    <div class="row">
+        <!-- 存放左侧菜单 -->
+        <div class="col-md-2  bodyleft" >
+             <div class="panel panel-primary">
+                  <div class="panel-heading">公告</div>
+                  <div class="panel-body">
+                        <div>昵称：{{ user.nick_name }}</div>
+                        <div>园龄：{{ user.create_time|date:"Y-m-d" }}</div>
+                  </div>
+            </div>
+
+            <!--对应view里的方法一-->
+            <div class="panel panel-info">
+                  <div class="panel-heading">分类归档</div>
+                  <div class="panel-body">
+                      {% for cate in catelist %}
+                          <!-- 注意html这里取一个列表的第几个值，直接 .数字就可以，如 list.1 ;list[1]会报错 -->
+                          <div><a href="/blog/{{ user.username }}/category/{{ cate.title }}">{{ cate.title }}({{ cate.article_set.count }})</a></div>
+                      {% endfor %}
+                  </div>
+            </div>
+
+{#            <!--对应view里的方法二-->#}
+{#            <div class="panel panel-info">#}
+{#                  <div class="panel-heading">分类归档</div>#}
+{#                  <div class="panel-body">#}
+{#                      {% for cate in catelist %}#}
+{#                          <!-- 注意html这里取一个列表的第几个值，直接 .数字就可以，如 list.1 ;list[1]会报错 -->#}
+{#                          <div>{{ cate.0 }}({{ cate.1 }})</div>#}
+{#                      {% endfor %}#}
+{#                  </div>#}
+{#            </div>#}
+
+            <div class="panel panel-default">
+                  <div class="panel-heading">标签</div>
+                  <div class="panel-body">
+                      <div>
+                          {% for tag in taglist %}
+                              <div><a href="/blog/{{ user.username }}/tag/{{ tag.0 }}">{{ tag.0 }}({{ tag.1 }})</a></div>
+                          {% endfor %}
+                      </div>
+                  </div>
+            </div>
+
+            <div class="panel panel-danger">
+                  <div class="panel-heading">发布时间</div>
+                  <div class="panel-body">
+                      <div>
+                          {% for cre in crelist %}
+                              <div><a href="/blog/{{ user.username }}/cret/{{ cre.0 }}">{{ cre.0 }}({{ cre.1 }})</a></div>
+                          {% endfor %}
+                      </div>
+                  </div>
+            </div>
+
+
+        </div>
+
+        <!-- 存放文章 -->
+
+        <div class="col-md-10  bodymiddle">
+            {% block art %}
+                {% for article in articles %}
+                    <div class="articletitle"><a href="/blog/{{ article.blog.user.username }}/article/{{ article.articleid }}"> {{ article.title }} </a></div>
+
+                    <div class="container">
+                        <div class="row article">
+                            <div class="col-md-1 "><img  class="userimg" src="/media/{{ article.blog.user.avatar }}"></div>
+                            <div class="col-md-10  desc">{{ article.desc }}</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="articleuser">
+                            <a href=""> {{ article.blog.user.username }}</a>&nbsp;
+                            发表于&nbsp;{{ article.create_time|date:"Y-m-d H:i:s" }}
+                            <!--create_time 只精确到了天 |date:"Y-m-d H:i:s"  -->
+                            <span class="articleinfo">
+                                <span class="glyphicon glyphicon-list-alt">阅读({{ article.read_count }})&nbsp;</span>
+                                <span class="glyphicon glyphicon-comment">评论({{ article.comment_count }})&nbsp;</span>
+                                <span class="glyphicon glyphicon-thumbs-up">点赞({{ article.up_count }})&nbsp;</span>
+                            </span>
+                        </div>
+                    </div>
+
+                <hr>
+                {% endfor %}
+            {% endblock %}
+        </div>
+
+
+    </div>
+</div>
+
+</body>
+</html>
