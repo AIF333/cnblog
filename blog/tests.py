@@ -13,9 +13,9 @@ from django.test import TestCase
 # print(chr(90))
 # print(chr(97))
 # print(chr(122))
-l=[]
-for i in range(48,58):
-    l.append(chr(i))
+# l=[]
+# for i in range(48,58):
+#     l.append(chr(i))
 
 # for i in range(65,91):
 #     l.append(chr(i))
@@ -42,8 +42,12 @@ for i in range(48,58):
 # getChar()
 
 # 检查字符串
-strs=["123456","abcde","123bcd"]
+# strs=["123456","abcde","123bcd"]
+#
+# for str in strs:
+#     if str.isdigit():
+#         print(str)
 
-for str in strs:
-    if str.isdigit():
-        print(str)
+
+import datetime
+print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") )

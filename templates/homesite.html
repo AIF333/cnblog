@@ -15,7 +15,7 @@
 <div class="container header">
     <div class="row" style="padding-top: 15px">
         <div class="col-md-2">
-            <span class="text">{{ username }}的个人博客</span>
+            <span class="text">{{ user.nick_name }} 的个人博客</span>
         </div>
     </div>
 </div>
@@ -101,7 +101,7 @@
                             <!--create_time 只精确到了天 |date:"Y-m-d H:i:s"  -->
                             <span class="articleinfo">
                                 <span class="glyphicon glyphicon-list-alt">阅读({{ article.read_count }})&nbsp;</span>
-                                <span class="glyphicon glyphicon-comment">评论({{ article.read_count }})&nbsp;</span>
+                                <span class="glyphicon glyphicon-comment">评论({{ article.comment_count }})&nbsp;</span>
                                 <span class="glyphicon glyphicon-thumbs-up">点赞({{ article.up_count }})&nbsp;</span>
                             </span>
                         </div>
@@ -115,7 +115,6 @@
 
     </div>
 </div>
-
 
 </body>
 </html>

@@ -12,7 +12,14 @@ urlpatterns = [
     # path('login/', blog_views.loginCnblog), # 登录页面 auth模块有login函数，所以名字换成loginCnblog
     # url(r'^media/(?P<path>.*)$',  serve, {"document_root": settings.MEDIA_ROOT}),
 
+    # 点赞
     url(r'^diggit/', blog_views.diggit),
+
+    # 评论
+    url(r'^comment/', blog_views.comment),
+
+    # 回复评论
+    url(r'^reply/', blog_views.reply),
 
     # 文章内容
     url(r'^(?P<username>\w+)/article/(?P<articleid>\d+)', blog_views.article),

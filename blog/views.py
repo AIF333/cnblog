@@ -11,7 +11,12 @@ def index(request):
     username=request.user.username #获取当前用户的用户名
     # print('------',username,password)
     articles = models.Article.objects.all().order_by("-create_time")
-    return render(request,"index.html",{"username":username,"articles":articles}) # render 传入参数需用双引号引起
+
+    # 如果登录的用户
+    if username:
+        return render(request,"index.html",{"username":username,"articles":articles}) # render 传入参数需用双引号引起
+    else:
+        return render(request,'nologindex.html')
 
 #注册页面
 def regCnblog(request):
@@ -231,7 +236,7 @@ def homeSite(request,username,**kwargs):
 
     conditon=kwargs.get("condition")
     para=kwargs.get("para")
-    print(username,conditon,para,kwargs,"----------")
+    # print(username,conditon,para,kwargs,"----------")
     user=models.UserInfo.objects.get(username=username)
     blog=user.blog
 
@@ -244,9 +249,9 @@ def homeSite(request,username,**kwargs):
     # print(catelist2)
 
     # 标签归档
-    print( "-----------")
+    # print( "-----------")
     taglist=models.Tag.objects.filter(blog=blog).filter(article__blog=blog).values("title").annotate(c=Count("article2tag__article")).values_list("title","c")
-    print(taglist,"------")
+    # print(taglist,"------")
 
     # 发布时间归档
     crelist=models.Article.objects.filter(blog=blog).extra(select={"formateDate":"strftime('%%Y-%%m',create_time)"})\
@@ -296,7 +301,9 @@ def article(request,username,articleid):
     print("---",blog)
     article=models.Article.objects.filter(blog=blog,articleid=articleid)[0]
 
-    return render(request,"article.html",{"article":article})
+    commentList=models.Comment.objects.filter(article=article)
+
+    return render(request,"article.html",{"article":article,"commentList":commentList})
 
 # 点赞功能
 def diggit(request):
@@ -304,7 +311,7 @@ def diggit(request):
     from django.db.models import F
     from blog import models
 
-    print("diggit---------------11111")
+    # print("diggit---------------11111")
     if request.is_ajax():
         article_id=request.POST.get("article_id")
 
@@ -329,6 +336,41 @@ def diggit(request):
     return JsonResponse(art_state)
 
 
+# 评论功能
+def comment(request):
+    import datetime
+    from blog import models
+    from django.db import transaction
+    from django.db.models import F
+
+    if request.is_ajax():
+        content=request.POST.get("comment")
+        comentuser=request.user.userid
+        article_id=request.POST.get("article_id")
+        create_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # print(comment,comentuser,article_id,"+++++++")
+
+        # 做到父级评论可以到数据库了
+
+        # 定一个中专的字典
+        commentInfo = {"create_time":None}
+        commentInfo["create_time"]=create_time
+
+        with transaction.atomic():
+            models.Comment.objects.create(content=content,create_time=create_time,article_id=article_id,user_id=comentuser)
+            models.Article.objects.filter(articleid=article_id).update(comment_count=F("comment_count")+1)
+
+        from django.http import JsonResponse
+        import json
+
+        # commentInfo=json.dumps(commentInfo)
+
+    print(commentInfo,type(commentInfo),"000000")
+    return JsonResponse(commentInfo)
+    # return HttpResponse(commentInfo)
+
+def reply(request):
+    pass
 
 # 测试用
 def test1(request):
